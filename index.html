@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#17251C">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icono-192.png">
+<title>Listas · admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<!-- ===================== CONFIGURACIÓN =====================
+     Pega en API_URL la misma URL /exec que usa la app de la lista -->
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzJxJDy1uVi7cQDsdZaop5ElMwZqYnd3u_Mdgma8wzjBc7Cnj0WkAXt-dGajdXp_UuA/exec
+";
+</script>
+<style>
+:root{
+  --bg:#EEF3EF; --card:#FFFFFF; --fg:#17251C; --muted:#5D6E63; --line:#D5DFD8;
+  --accent:#2C7A4B; --accent-ink:#FFFFFF; --danger:#B3402F; --shade:rgba(10,20,14,.45);
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#101814; --card:#18231D; --fg:#E4EEE7; --muted:#93A69A; --line:#2A3A31;
+  --accent:#4FB37A; --accent-ink:#0B1610; --danger:#E0745F; --shade:rgba(0,0,0,.6); color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+button,input{font:inherit}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(40px + env(safe-area-inset-bottom,0px))}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+h1{font-family:var(--display);font-weight:800;font-size:1.5rem;margin:0}
+.n{font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.status{margin:14px 0 0;font-size:.9rem;color:var(--muted)}
+.status.err{color:var(--danger)}
+
+/* Alta */
+.alta{display:grid;gap:8px;margin-top:16px}
+.row2{display:flex;gap:8px;align-items:center}
+.row2 input{flex:1;min-width:0}
+.row2 .mini{height:48px}
+input.mono{font-family:var(--mono);letter-spacing:.04em}
+.note{margin:8px 0 0;font-size:.85rem;color:var(--muted)}
+input{color:var(--fg);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
+input:focus{outline:none;border-color:var(--accent)}
+.btn{flex:none;height:48px;border-radius:12px;border:0;cursor:pointer;font-weight:600;padding:0 16px}
+.ok{background:var(--accent);color:var(--accent-ink)}
+.ghost{background:var(--bg);color:var(--fg);border:1.5px solid var(--line)}
+.danger{background:var(--danger);color:#fff}
+
+/* Listado */
+ul{list-style:none;margin:16px 0 0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+li{padding:12px 14px;border-top:1px solid var(--line);display:grid;gap:8px}
+li:first-child{border-top:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:36px}
+.name{font-weight:600;overflow-wrap:anywhere;min-width:0}
+.mine{font-size:.75rem;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.line{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.code{flex:1;min-width:8em;font-family:var(--mono);font-size:1rem;letter-spacing:.05em;background:var(--bg);border-radius:8px;padding:6px 10px;overflow-wrap:anywhere;user-select:all}
+.mini{height:36px;border-radius:9px;border:1.5px solid var(--line);background:var(--card);color:var(--fg);padding:0 10px;font-size:.85rem;font-weight:600;cursor:pointer}
+.mini.red{color:var(--danger)}
+.empty{padding:18px;color:var(--muted);text-align:center}
+
+.gate{margin-top:24px;display:grid;gap:10px}
+.gate label{font-size:.8rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.foot{margin-top:28px;text-align:center}
+.link{border:0;background:transparent;color:var(--muted);font-size:.85rem;cursor:pointer;text-decoration:underline}
+
+.shade{position:fixed;inset:0;z-index:20;background:var(--shade);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;background:var(--card);border-radius:18px 18px 0 0;padding:18px max(16px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:12px}
+.sheet h3{margin:0;font-family:var(--display);font-size:1.15rem}
+.sheet p{margin:0;color:var(--muted)}
+.sheet .row{display:flex;gap:8px}
+.sheet .row .btn{flex:1}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(16px + env(safe-area-inset-top,0px));z-index:30;background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.92rem;max-width:calc(100% - 32px)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Listas</h1>
+    <span class="n" id="n"></span>
+  </header>
+  <p class="status" id="status"></p>
+
+  <form class="gate" id="gate" hidden>
+    <label for="gateInput">Clave de administrador</label>
+    <input id="gateInput" type="password" autocomplete="off">
+    <button class="btn ok" type="submit">Entrar</button>
+  </form>
+
+  <main id="main" hidden>
+    <form class="alta" id="alta" autocomplete="off">
+      <input id="nombre" placeholder="Nombre" maxlength="40" aria-label="Nombre de la nueva lista">
+      <div class="row2">
+        <input id="codigo" class="mono" maxlength="40" aria-label="Código" autocapitalize="off" spellcheck="false">
+        <button class="mini" type="button" id="otro">Otro</button>
+      </div>
+      <button class="btn ok" type="submit">Dar de alta</button>
+    </form>
+    <p class="note">Puedes escribir el código que quieras: letras y números, mínimo 6, sin espacios. Mayúsculas y minúsculas dan igual.</p>
+    <ul id="listas"></ul>
+    <div class="foot"><button class="link" type="button" id="salir">Salir del panel</button></div>
+  </main>
+</div>
+
+<div class="shade" id="shade" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} }, del(k){ try{localStorage.removeItem(k)}catch(e){} } };
+let ADMIN = store.get("compra_admin");
+let listas = [];
+
+const ERRORES = {
+  falta_nombre: "Escribe el nombre.",
+  codigo_repetido: "Ese código ya lo tiene otra lista. Elige otro.",
+  codigo_invalido: "El código debe tener al menos 6 letras o números, sin espacios ni símbolos.",
+  no_existe: "Esa lista ya no existe. Se ha recargado el panel.",
+  principal: "Vuestra lista no se puede dar de baja.",
+};
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function setStatus(m, err){ const s=$("status"); s.textContent=m||""; s.hidden=!m; s.classList.toggle("err", !!err); }
+let tt; function toast(m){ const t=$("toast"); t.textContent=m; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true, 3200); }
+
+/* Propuesta de código fácil: una palabra de la compra + 3 cifras (p. ej. Tomate482) */
+const PALABRAS = ["Tomate","Lenteja","Pimiento","Naranja","Manzana","Cebolla","Patata","Zanahoria","Garbanzo","Melocoton","Platano","Lechuga","Pepino","Calabaza","Aceituna","Galleta","Yogur","Queso","Pera","Fresa","Limon","Uva","Sandia","Melon","Ciruela","Almendra","Avellana","Croqueta","Tortilla","Magdalena","Churro","Turron","Paella","Gazpacho","Cocido","Fabada","Canela","Oregano","Romero","Perejil"];
+function genCodigo(){
+  const v = new Uint32Array(2); crypto.getRandomValues(v);
+  return PALABRAS[v[0] % PALABRAS.length] + String(100 + v[1] % 900);
+}
+const valido = c => /^[A-Za-z0-9]{6,40}$/.test(c);
+
+async function call(body, okMsg){
+  setStatus("Guardando…");
+  try{
+    const r = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({ admin: ADMIN, ...body }) });
+    const res = await r.json();
+    if (res.error === "clave"){ store.del("compra_admin"); ADMIN=null; showGate("Clave de administrador incorrecta."); return false; }
+    if (res.listas){ listas = res.listas; render(); }
+    if (!res.ok){ setStatus(ERRORES[res.error] || "No se ha podido guardar.", true); return false; }
+    setStatus(""); if (okMsg) toast(okMsg); return true;
+  }catch(e){ setStatus("Sin conexión con la hoja. Inténtalo de nuevo.", true); return false; }
+}
+
+function render(){
+  const ul = $("listas"); ul.innerHTML = "";
+  $("n").textContent = listas.length ? `${listas.length} lista${listas.length===1?"":"s"}` : "";
+  const orden = listas.slice().sort((a,b)=> (b.principal - a.principal) || a.nombre.localeCompare(b.nombre,"es"));
+  if (!orden.length){ ul.innerHTML = '<li class="empty">Todavía no hay listas.</li>'; }
+  orden.forEach(l => {
+    const li = document.createElement("li");
+    li.innerHTML = `<div class="top"><span class="name">${esc(l.nombre || "(sin nombre)")}</span>${l.principal ? '<span class="mine">Vuestra</span>' : '<button class="mini red" type="button" data-a="baja">Baja</button>'}</div>
+      <div class="line"><span class="code">${esc(l.codigo)}</span>
+        <button class="mini" type="button" data-a="copiar">Copiar</button>
+        <button class="mini" type="button" data-a="reset">Resetear</button></div>`;
+    li.querySelector('[data-a="copiar"]').onclick = () => copiar(l.codigo);
+    li.querySelector('[data-a="reset"]').onclick = () => resetear(l);
+    const b = li.querySelector('[data-a="baja"]'); if (b) b.onclick = () => baja(l);
+    ul.append(li);
+  });
+  $("main").hidden = false;
+}
+async function copiar(t){
+  try { await navigator.clipboard.writeText(t); toast("Código copiado."); }
+  catch(e){ toast("No se ha podido copiar. Mantén pulsado el código para seleccionarlo."); }
+}
+
+function confirmar(titulo, texto, okLabel, peligro, onOk){
+  $("sheet").innerHTML = `<h3>${esc(titulo)}</h3><p>${esc(texto)}</p>
+    <div class="row"><button class="btn ghost" type="button" id="cNo">Cancelar</button><button class="btn ${peligro?"danger":"ok"}" type="button" id="cSi">${esc(okLabel)}</button></div>`;
+  $("shade").hidden = false;
+  $("cNo").onclick = () => $("shade").hidden = true;
+  $("cSi").onclick = () => { $("shade").hidden = true; onOk(); };
+}
+$("shade").addEventListener("click", e => { if (e.target.id === "shade") $("shade").hidden = true; });
+
+function resetear(l){
+  $("sheet").innerHTML = `<h3>Nuevo código para ${esc(l.nombre)}</h3>
+    <p>Escribe el que quieras o deja el propuesto. En sus móviles volverá a salir la pantalla de entrada y tendrás que escribírselo.</p>
+    <div class="row2"><input id="rCodigo" class="mono" maxlength="40" autocapitalize="off" spellcheck="false" value="${esc(genCodigo())}" aria-label="Código nuevo"><button class="mini" type="button" id="rOtro">Otro</button></div>
+    <div class="row"><button class="btn ghost" type="button" id="cNo">Cancelar</button><button class="btn ok" type="button" id="cSi">Guardar</button></div>`;
+  $("shade").hidden = false;
+  $("rOtro").onclick = () => { $("rCodigo").value = genCodigo(); };
+  $("cNo").onclick = () => $("shade").hidden = true;
+  $("cSi").onclick = () => {
+    const codigo = $("rCodigo").value.trim();
+    if (!valido(codigo)) { $("rCodigo").focus(); return toast("Mínimo 6 letras o números, sin espacios ni símbolos."); }
+    $("shade").hidden = true;
+    call({ accion:"editar", codigoActual:l.codigo, nombre:l.nombre, codigo }, `Código de ${l.nombre}: ${codigo}`);
+  };
+}
+function baja(l){
+  confirmar(`¿Dar de baja a ${l.nombre}?`,
+    "Se borrarán su lista y sus supermercados, y su código dejará de funcionar. No se puede deshacer.",
+    "Dar de baja", true,
+    () => call({ accion:"baja", codigoActual:l.codigo }, `${l.nombre} dada de baja.`));
+}
+$("codigo").value = genCodigo();
+$("otro").onclick = () => { $("codigo").value = genCodigo(); };
+$("alta").addEventListener("submit", async e => {
+  e.preventDefault();
+  const nombre = $("nombre").value.trim();
+  if (!nombre) return setStatus(ERRORES.falta_nombre, true);
+  if (listas.some(l => l.nombre.trim().toLowerCase() === nombre.toLowerCase())) return setStatus(`Ya hay una lista llamada «${nombre}».`, true);
+  const codigo = $("codigo").value.trim();
+  if (!valido(codigo)) return setStatus("El código debe tener al menos 6 letras o números, sin espacios ni símbolos.", true);
+  if (await call({ accion:"crear", nombre, codigo }, `Alta de ${nombre}: ${codigo}`)){ $("nombre").value = ""; $("codigo").value = genCodigo(); document.activeElement.blur(); }
+});
+
+function showGate(msg){ $("gate").hidden=false; $("main").hidden=true; $("n").textContent=""; setStatus(msg||"", !!msg); }
+$("gate").addEventListener("submit", e => {
+  e.preventDefault(); const v=$("gateInput").value.trim(); if (!v) return;
+  ADMIN=v; store.set("compra_admin", v); $("gateInput").value=""; start();
+});
+$("salir").onclick = () => { store.del("compra_admin"); ADMIN=null; listas=[]; $("listas").innerHTML=""; showGate("Has salido del panel."); };
+
+async function start(){ $("gate").hidden=true; setStatus("Cargando listas…"); if (await call({ accion:"listar" })) setStatus(""); }
+if (location.search) history.replaceState(null, "", location.pathname);
+if (!API_URL.startsWith("https://")) setStatus("Falta pegar la URL de Apps Script en este archivo.", true);
+else if (!ADMIN) showGate();
+else start();
+document.addEventListener("visibilitychange", () => { if (document.visibilityState==="visible" && ADMIN) call({ accion:"listar" }); });
+</script>
+</body>
+</html>
