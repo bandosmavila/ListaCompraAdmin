@@ -55,9 +55,16 @@ input:focus{outline:none;border-color:var(--accent)}
 
 /* Listado */
 ul{list-style:none;margin:16px 0 0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-li{padding:12px 14px;border-top:1px solid var(--line);display:grid;gap:8px}
+li{border-top:1px solid var(--line)}
 li:first-child{border-top:0}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:36px}
+summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px;min-height:52px}
+summary::-webkit-details-marker{display:none}
+summary .name{flex:1}
+.chev{flex:none;width:18px;height:18px;color:var(--muted);transition:transform .15s}
+details[open] .chev{transform:rotate(180deg)}
+.body{display:grid;gap:10px;padding:0 14px 14px}
+.acts{display:flex;gap:6px;justify-content:flex-end}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
 .name{font-weight:600;overflow-wrap:anywhere;min-width:0}
 .mine{font-size:.75rem;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .line{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -118,6 +125,7 @@ const $ = id => document.getElementById(id);
 const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} }, del(k){ try{localStorage.removeItem(k)}catch(e){} } };
 let ADMIN = store.get("compra_admin");
 let listas = [];
+const abiertas = new Set();   // listas desplegadas (por nombre); al abrir el panel, todas plegadas
 
 const ERRORES = {
   falta_nombre: "Escribe el nombre.",
@@ -157,10 +165,16 @@ function render(){
   if (!orden.length){ ul.innerHTML = '<li class="empty">Todavía no hay listas.</li>'; }
   orden.forEach(l => {
     const li = document.createElement("li");
-    li.innerHTML = `<div class="top"><span class="name">${esc(l.nombre || "(sin nombre)")}</span>${l.principal ? '<span class="mine">Vuestra</span>' : '<button class="mini red" type="button" data-a="baja">Baja</button>'}</div>
-      <div class="line"><span class="code">${esc(l.codigo)}</span>
-        <button class="mini" type="button" data-a="copiar">Copiar</button>
-        <button class="mini" type="button" data-a="reset">Resetear</button></div>`;
+    li.innerHTML = `<details${abiertas.has(l.nombre) ? " open" : ""}>
+      <summary><span class="name">${esc(l.nombre || "(sin nombre)")}</span>${l.principal ? '<span class="mine">Vuestra</span>' : ""}
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="body">
+        <div class="line"><span class="code">${esc(l.codigo)}</span>
+          <button class="mini" type="button" data-a="copiar">Copiar</button>
+          <button class="mini" type="button" data-a="reset">Resetear</button></div>
+        ${l.principal ? "" : '<div class="acts"><button class="mini red" type="button" data-a="baja">Dar de baja</button></div>'}
+      </div></details>`;
+    li.querySelector("details").addEventListener("toggle", e => { e.target.open ? abiertas.add(l.nombre) : abiertas.delete(l.nombre); });
     li.querySelector('[data-a="copiar"]').onclick = () => copiar(l.codigo);
     li.querySelector('[data-a="reset"]').onclick = () => resetear(l);
     const b = li.querySelector('[data-a="baja"]'); if (b) b.onclick = () => baja(l);
@@ -212,6 +226,7 @@ $("alta").addEventListener("submit", async e => {
   if (listas.some(l => l.nombre.trim().toLowerCase() === nombre.toLowerCase())) return setStatus(`Ya hay una lista llamada «${nombre}».`, true);
   const codigo = $("codigo").value.trim();
   if (!valido(codigo)) return setStatus("El código debe tener al menos 6 letras o números, sin espacios ni símbolos.", true);
+  abiertas.add(nombre);
   if (await call({ accion:"crear", nombre, codigo }, `Alta de ${nombre}: ${codigo}`)){ $("nombre").value = ""; $("codigo").value = genCodigo(); document.activeElement.blur(); }
 });
 
@@ -220,7 +235,7 @@ $("gate").addEventListener("submit", e => {
   e.preventDefault(); const v=$("gateInput").value.trim(); if (!v) return;
   ADMIN=v; store.set("compra_admin", v); $("gateInput").value=""; start();
 });
-$("salir").onclick = () => { store.del("compra_admin"); ADMIN=null; listas=[]; $("listas").innerHTML=""; showGate("Has salido del panel."); };
+$("salir").onclick = () => { store.del("compra_admin"); ADMIN=null; listas=[]; abiertas.clear(); $("listas").innerHTML=""; showGate("Has salido del panel."); };
 
 async function start(){ $("gate").hidden=true; setStatus("Cargando listas…"); if (await call({ accion:"listar" })) setStatus(""); }
 if (location.search) history.replaceState(null, "", location.pathname);
